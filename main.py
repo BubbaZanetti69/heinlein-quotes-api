@@ -54,3 +54,17 @@ def search_quotes(
 def list_novels(db: Session = Depends(get_db)):
     novels = db.query(Quote.novel).distinct()
     return sorted([n[0] for n in novels])
+
+class QuoteCreate(BaseModel):
+    quote: str
+    novel: str
+
+@app.post("/quotes")
+def create_quote(quote_in: QuoteCreate):
+    db: Session = SessionLocal()
+    db_quote = Quote(quote=quote_in.quote, novel=quote_in.novel)
+    db.add(db_quote)
+    db.commit()
+    db.refresh(db_quote)
+    db.close()
+    return {"message": "Quote added!", "id": db_quote.id}
